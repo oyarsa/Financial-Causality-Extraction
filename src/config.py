@@ -13,11 +13,18 @@
 # limitations under the License.
 
 from enum import Enum
-from typing import Callable
+from typing import Callable, Type
 
-import torch
-from transformers import AdamW, get_cosine_schedule_with_warmup, AlbertTokenizer, XLNetTokenizer, RobertaTokenizer, \
-    BertTokenizer, DistilBertTokenizer
+from torch.optim.optimizer import Optimizer
+from transformers import (
+    AdamW,
+    AlbertTokenizer,
+    BertTokenizer,
+    DistilBertTokenizer,
+    RobertaTokenizer,
+    XLNetTokenizer,
+    get_cosine_schedule_with_warmup,
+)
 
 from src.models.albert import AlbertForCauseEffect
 from src.models.bert import BertForCauseEffect
@@ -27,56 +34,59 @@ from src.models.xlnet import XLNetForCauseEffect
 
 
 class ModelConfigurations(Enum):
-    BertBase = ('bert', 'bert-base-cased', False)
-    BertLarge = ('bert', 'bert-large-cased', False)
-    BertSquad = ('bert', 'deepset/bert-base-cased-squad2', False)
-    BertSquad2 = ('bert', 'deepset/bert-large-uncased-whole-word-masking-squad2', True)
-    DistilBert = ('distilbert', 'distilbert-base-uncased', True)
-    DistilBertSquad = ('distilbert', 'distilbert-base-uncased-distilled-squad', True)
-    RoBERTaSquad = ('roberta', 'deepset/roberta-base-squad2', False)
-    RoBERTaSquadLarge = ('roberta', 'ahotrod/roberta_large_squad2', False)
-    RoBERTa = ('roberta', 'roberta-base', False)
-    RoBERTaLarge = ('roberta', 'roberta-large', False)
-    XLNetBase = ('xlnet', 'xlnet-base-cased', False)
-    AlbertSquad = ('albert', 'twmkn9/albert-base-v2-squad2', True)
+    """(model_type, model_name_or_path, do_lower_case)"""
+    BertBase = ("bert", "bert-base-cased", False)
+    BertLarge = ("bert", "bert-large-cased", False)
+    BertSquad = ("bert", "deepset/bert-base-cased-squad2", False)
+    BertSquad2 = ("bert", "deepset/bert-large-uncased-whole-word-masking-squad2", True)
+    DistilBert = ("distilbert", "distilbert-base-uncased", True)
+    DistilBertSquad = ("distilbert", "distilbert-base-uncased-distilled-squad", True)
+    RoBERTaSquad = ("roberta", "deepset/roberta-base-squad2", False)
+    RoBERTaSquadLarge = ("roberta", "ahotrod/roberta_large_squad2", False)
+    RoBERTa = ("roberta", "roberta-base", False)
+    RoBERTaLarge = ("roberta", "roberta-large", False)
+    XLNetBase = ("xlnet", "xlnet-base-cased", False)
+    AlbertSquad = ("albert", "twmkn9/albert-base-v2-squad2", True)
 
 
 model_tokenizer_mapping = {
-    'distilbert': (DistilBertForCauseEffect, DistilBertTokenizer),
-    'bert': (BertForCauseEffect, BertTokenizer),
-    'roberta': (RoBERTaForCauseEffect, RobertaTokenizer),
-    'xlnet': (XLNetForCauseEffect, XLNetTokenizer),
-    'albert': (AlbertForCauseEffect, AlbertTokenizer),
+    "distilbert": (DistilBertForCauseEffect, DistilBertTokenizer),
+    "bert": (BertForCauseEffect, BertTokenizer),
+    "roberta": (RoBERTaForCauseEffect, RobertaTokenizer),
+    "xlnet": (XLNetForCauseEffect, XLNetTokenizer),
+    "albert": (AlbertForCauseEffect, AlbertTokenizer),
 }
 
 
 class RunConfig:
-    def __init__(self,
-                 do_train: bool = False,
-                 do_eval: bool = True,
-                 do_test: bool = False,
-                 max_seq_length: int = 384,
-                 doc_stride: int = 128,
-                 train_batch_size: int = 4,
-                 gradient_accumulation_steps: int = 3,
-                 warmup_steps: int = 50,
-                 learning_rate: float = 3e-5,
-                 differential_lr_ratio: float = 1.0,
-                 max_grad_norm: float = 1.0,
-                 adam_epsilon: float = 1e-8,
-                 num_train_epochs: int = 5,
-                 save_model: bool = True,
-                 weight_decay: float = 0.0,
-                 optimizer_class: torch.optim.Optimizer = AdamW,
-                 scheduler_function: Callable = get_cosine_schedule_with_warmup,
-                 evaluate_during_training: bool = True,
-                 eval_batch_size: int = 8,
-                 n_best_size: int = 5,
-                 max_answer_length: int = 300,
-                 sentence_boundary_heuristic: bool = True,
-                 full_sentence_heuristic: bool = True,
-                 shared_sentence_heuristic: bool = False,
-                 top_n_sentences: bool = True):
+    def __init__(
+        self,
+        do_train: bool = False,
+        do_eval: bool = True,
+        do_test: bool = False,
+        max_seq_length: int = 384,
+        doc_stride: int = 128,
+        train_batch_size: int = 4,
+        gradient_accumulation_steps: int = 3,
+        warmup_steps: int = 50,
+        learning_rate: float = 3e-5,
+        differential_lr_ratio: float = 1.0,
+        max_grad_norm: float = 1.0,
+        adam_epsilon: float = 1e-8,
+        num_train_epochs: int = 5,
+        save_model: bool = True,
+        weight_decay: float = 0.0,
+        optimizer_class: Type[Optimizer] = AdamW,
+        scheduler_function: Callable = get_cosine_schedule_with_warmup,
+        evaluate_during_training: bool = True,
+        eval_batch_size: int = 8,
+        n_best_size: int = 5,
+        max_answer_length: int = 300,
+        sentence_boundary_heuristic: bool = True,
+        full_sentence_heuristic: bool = True,
+        shared_sentence_heuristic: bool = False,
+        top_n_sentences: bool = True,
+    ):
         self.do_train = do_train
         self.do_eval = do_eval
         self.do_test = do_test

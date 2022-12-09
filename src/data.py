@@ -16,25 +16,24 @@
 # limitations under the License.
 
 import unicodedata
-from typing import Optional, List
+from typing import List, Optional
 
 import pandas as pd
 
 
 class FinCausalExample:
-
     def __init__(
-            self,
-            example_id: str,
-            context_text: str,
-            cause_text: str,
-            effect_text: str,
-            offset_sentence_2: int,
-            offset_sentence_3: int,
-            cause_start_position_character: Optional[int],
-            cause_end_position_character: Optional[int],
-            effect_start_position_character: Optional[int],
-            effect_end_position_character: Optional[int]
+        self,
+        example_id: str,
+        context_text: str,
+        cause_text: str,
+        effect_text: str,
+        offset_sentence_2: int,
+        offset_sentence_3: int,
+        cause_start_position_character: Optional[int],
+        cause_end_position_character: Optional[int],
+        effect_start_position_character: Optional[int],
+        effect_end_position_character: Optional[int],
     ):
 
         self.example_id = example_id
@@ -50,7 +49,8 @@ class FinCausalExample:
         word_to_char_mapping: List[int] = []
         prev_is_whitespace = True
 
-        # Split on whitespace so that different tokens may be attributed to their original position.
+        # Split on whitespace so that different tokens may be attributed to
+        # their original position.
         for char_index, c in enumerate(self.context_text):
             if _is_whitespace(c):
                 prev_is_whitespace = True
@@ -71,16 +71,32 @@ class FinCausalExample:
 
         # Start and end positions only has a value during evaluation.
         if cause_start_position_character is not None:
-            assert (cause_start_position_character + len(cause_text) == cause_end_position_character)
-            self.start_cause_position = char_to_word_offset[cause_start_position_character]
+            assert (
+                cause_start_position_character + len(cause_text)
+                == cause_end_position_character
+            )
+            self.start_cause_position = char_to_word_offset[
+                cause_start_position_character
+            ]
             self.end_cause_position = char_to_word_offset[
-                min(cause_start_position_character + len(cause_text) - 1, len(char_to_word_offset) - 1)
+                min(
+                    cause_start_position_character + len(cause_text) - 1,
+                    len(char_to_word_offset) - 1,
+                )
             ]
         if effect_start_position_character is not None:
-            self.start_effect_position = char_to_word_offset[effect_start_position_character]
-            assert (effect_start_position_character + len(effect_text) == effect_end_position_character)
+            self.start_effect_position = char_to_word_offset[
+                effect_start_position_character
+            ]
+            assert (
+                effect_start_position_character + len(effect_text)
+                == effect_end_position_character
+            )
             self.end_effect_position = char_to_word_offset[
-                min(effect_start_position_character + len(effect_text) - 1, len(char_to_word_offset) - 1)
+                min(
+                    effect_start_position_character + len(effect_text) - 1,
+                    len(char_to_word_offset) - 1,
+                )
             ]
 
         if pd.notna(offset_sentence_2):
@@ -96,28 +112,27 @@ class FinCausalExample:
 
 
 class FinCausalFeatures:
-
     def __init__(
-            self,
-            input_ids,
-            attention_mask,
-            token_type_ids,
-            cls_index,
-            p_mask,
-            example_orig_index,
-            example_index,
-            unique_id,
-            paragraph_len,
-            token_is_max_context,
-            tokens,
-            token_to_orig_map,
-            cause_start_position,
-            cause_end_position,
-            effect_start_position,
-            effect_end_position,
-            sentence_2_offset,
-            sentence_3_offset,
-            is_impossible,
+        self,
+        input_ids,
+        attention_mask,
+        token_type_ids,
+        cls_index,
+        p_mask,
+        example_orig_index,
+        example_index,
+        unique_id,
+        paragraph_len,
+        token_is_max_context,
+        tokens,
+        token_to_orig_map,
+        cause_start_position,
+        cause_end_position,
+        effect_start_position,
+        effect_end_position,
+        sentence_2_offset,
+        sentence_3_offset,
+        is_impossible,
     ):
         self.input_ids = input_ids
         self.attention_mask = attention_mask
@@ -145,8 +160,17 @@ class FinCausalFeatures:
 
 
 class FinCausalResult:
-    def __init__(self, unique_id, start_cause_logits, end_cause_logits, start_effect_logits, end_effect_logits,
-                 start_top_index=None, end_top_index=None, cls_logits=None):
+    def __init__(
+        self,
+        unique_id,
+        start_cause_logits,
+        end_cause_logits,
+        start_effect_logits,
+        end_effect_logits,
+        start_top_index=None,
+        end_top_index=None,
+        cls_logits=None,
+    ):
         self.start_cause_logits = start_cause_logits
         self.end_cause_logits = end_cause_logits
         self.start_effect_logits = start_effect_logits
@@ -160,7 +184,14 @@ class FinCausalResult:
 
 
 def _is_whitespace(char: str) -> bool:
-    if char == " " or char == "\t" or char == "\r" or char == "\n" or char == '\xa0' or ord(char) == 0x202F:
+    if (
+        char == " "
+        or char == "\t"
+        or char == "\r"
+        or char == "\n"
+        or char == "\xa0"
+        or ord(char) == 0x202F
+    ):
         return True
     return False
 
