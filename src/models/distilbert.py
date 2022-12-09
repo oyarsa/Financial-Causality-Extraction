@@ -1,4 +1,5 @@
-# Copyright 2019-present, the HuggingFace Inc. team, The Google AI Language Team and Facebook, Inc.
+# Copyright 2019-present, the HuggingFace Inc. team, The Google AI Language Team
+# and Facebook, Inc.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 # Copyright 2020 Guillaume Becquin.
 # MODIFIED FOR CAUSE EFFECT EXTRACTION
@@ -31,18 +32,21 @@ class DistilBertForCauseEffect(DistilBertPreTrainedModel):
         self.init_weights()
 
     def forward(
-            self,
-            input_ids=None,
-            attention_mask=None,
-            head_mask=None,
-            inputs_embeds=None,
-            start_cause_positions=None,
-            end_cause_positions=None,
-            start_effect_positions=None,
-            end_effect_positions=None,
+        self,
+        input_ids=None,
+        attention_mask=None,
+        head_mask=None,
+        inputs_embeds=None,
+        start_cause_positions=None,
+        end_cause_positions=None,
+        start_effect_positions=None,
+        end_effect_positions=None,
     ):
         distilbert_output = self.distilbert(
-            input_ids=input_ids, attention_mask=attention_mask, head_mask=head_mask, inputs_embeds=inputs_embeds
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
         )
         hidden_states = distilbert_output[0]  # (bs, max_query_len, dim)
 
@@ -57,13 +61,20 @@ class DistilBertForCauseEffect(DistilBertPreTrainedModel):
         start_effect_logits = start_effect_logits.squeeze(-1)  # (bs, max_query_len)
         end_effect_logits = end_effect_logits.squeeze(-1)  # (bs, max_query_len)
 
-        outputs = (start_cause_logits, end_cause_logits, start_effect_logits, end_effect_logits,) \
-                  + distilbert_output[1:]
-        if start_cause_positions is not None \
-                and end_cause_positions is not None \
-                and start_effect_positions is not None \
-                and end_effect_positions is not None:
-            # sometimes the start/end positions are outside our model inputs, we ignore these terms
+        outputs = (
+            start_cause_logits,
+            end_cause_logits,
+            start_effect_logits,
+            end_effect_logits,
+        ) + distilbert_output[1:]
+        if (
+            start_cause_positions is not None
+            and end_cause_positions is not None
+            and start_effect_positions is not None
+            and end_effect_positions is not None
+        ):
+            # sometimes the start/end positions are outside our model inputs, we
+            # ignore these terms
             ignored_index = start_cause_logits.size(1)
             start_cause_positions.clamp_(0, ignored_index)
             end_cause_positions.clamp_(0, ignored_index)
@@ -75,7 +86,11 @@ class DistilBertForCauseEffect(DistilBertPreTrainedModel):
             end_cause_loss = loss_fct(end_cause_logits, end_cause_positions)
             start_effect_loss = loss_fct(start_effect_logits, start_effect_positions)
             end_effect_loss = loss_fct(end_effect_logits, end_effect_positions)
-            total_loss = (start_cause_loss + end_cause_loss + start_effect_loss + end_effect_loss) / 4
+            total_loss = (
+                start_cause_loss + end_cause_loss + start_effect_loss + end_effect_loss
+            ) / 4
             outputs = (total_loss,) + outputs
 
-        return outputs  # (loss), start_cause_logits, end_cause_logits, start_effect_logits, end_effect_logits(hidden_states), (attentions)
+        # (loss), start_cause_logits, end_cause_logits, start_effect_logits,
+        # end_effect_logits(hidden_states), (attentions)
+        return outputs

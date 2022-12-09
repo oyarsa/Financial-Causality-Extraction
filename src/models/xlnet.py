@@ -1,4 +1,5 @@
-# Copyright 2018 Google AI, Google Brain and Carnegie Mellon University Authors and the HuggingFace Inc. team.
+# Copyright 2018 Google AI, Google Brain and Carnegie Mellon University Authors
+# and the HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 # Copyright 2020 Guillaume Becquin.
 # MODIFIED FOR CAUSE EFFECT EXTRACTION
@@ -31,21 +32,21 @@ class XLNetForCauseEffect(XLNetPreTrainedModel):
         self.init_weights()
 
     def forward(
-            self,
-            input_ids=None,
-            attention_mask=None,
-            mems=None,
-            perm_mask=None,
-            target_mapping=None,
-            token_type_ids=None,
-            input_mask=None,
-            head_mask=None,
-            inputs_embeds=None,
-            use_cache=True,
-            start_cause_positions=None,
-            end_cause_positions=None,
-            start_effect_positions=None,
-            end_effect_positions=None,
+        self,
+        input_ids=None,
+        attention_mask=None,
+        mems=None,
+        perm_mask=None,
+        target_mapping=None,
+        token_type_ids=None,
+        input_mask=None,
+        head_mask=None,
+        inputs_embeds=None,
+        use_cache=True,
+        start_cause_positions=None,
+        end_cause_positions=None,
+        start_effect_positions=None,
+        end_effect_positions=None,
     ):
 
         outputs = self.transformer(
@@ -73,12 +74,20 @@ class XLNetForCauseEffect(XLNetPreTrainedModel):
         start_effect_logits = start_effect_logits.squeeze(-1)
         end_effect_logits = end_effect_logits.squeeze(-1)
 
-        outputs = (start_cause_logits, end_cause_logits, start_effect_logits, end_effect_logits,) + outputs[2:]
-        if start_cause_positions is not None \
-                and end_cause_positions is not None \
-                and start_effect_positions is not None \
-                and end_effect_positions is not None:
-            # sometimes the start/end positions are outside our model inputs, we ignore these terms
+        outputs = (
+            start_cause_logits,
+            end_cause_logits,
+            start_effect_logits,
+            end_effect_logits,
+        ) + outputs[2:]
+        if (
+            start_cause_positions is not None
+            and end_cause_positions is not None
+            and start_effect_positions is not None
+            and end_effect_positions is not None
+        ):
+            # sometimes the start/end positions are outside our model inputs, we
+            # ignore these terms
             ignored_index = start_cause_logits.size(1)
             start_cause_positions.clamp_(0, ignored_index)
             end_cause_positions.clamp_(0, ignored_index)
@@ -90,7 +99,9 @@ class XLNetForCauseEffect(XLNetPreTrainedModel):
             end_cause_loss = loss_fct(end_cause_logits, end_cause_positions)
             start_effect_loss = loss_fct(start_effect_logits, start_effect_positions)
             end_effect_loss = loss_fct(end_effect_logits, end_effect_positions)
-            total_loss = (start_cause_loss + end_cause_loss + start_effect_loss + end_effect_loss) / 4
+            total_loss = (
+                start_cause_loss + end_cause_loss + start_effect_loss + end_effect_loss
+            ) / 4
             outputs = (total_loss,) + outputs
 
         return outputs
